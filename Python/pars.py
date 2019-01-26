@@ -1,11 +1,4 @@
 import requests
-from bs4 import BeautifulSoup as bs
-import time
-import pycurl
-from grab import Grab
-
-headers = {'accept': '*/*',
-           'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'}
 
 base_url = 'http://www.zakupki.gov.ru/epz/order/quicksearch/search.html?searchString=7018007264&strictEqual=on&pageNumber=1&sortDirection=false&recordsPerPage=_50&showLotsInfoHidden=false&fz44=on&fz223=on&ppRf615=on&af=on&ca=on&pc=on&pa=on&currencyId=-1&regionDeleted=false&sortBy=UPDATE_DATE'
 
@@ -18,51 +11,33 @@ base_url = 'http://www.zakupki.gov.ru/epz/order/quicksearch/search.html?searchSt
         print(len(div1))
     else:
         print('ERROR')
-
-def parse_nalog(headers):
-    nalog_url = 'https://rmsp.nalog.ru/search-proc.json?query=7021004633'
-    session = requests.Session()
-    request = session.get(nalog_url, headers=headers)
-    print(session.cookies)
-    print(request.cookies)
-    if request.status_code == 200:
-        answer = request.json()
-        ans = answer.pop('data')
-        answer = ans[0]
-        token = answer.pop('token')
-        nalog_url_1 = 'https://egrul.nalog.ru/vyp-request/' + token + '?r=&_=' + str(int(time.time()*1000))
-        cook = session.cookies
-        headers = {'Accept': '*/*',
-                   'Host': 'egrul.nalog.ru',
-                   'Cookies': str(cook),
-                   'Referer': 'https://egrul.nalog.ru/index.html',
-                   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
-                   }
-        request1 = session.get(nalog_url_1, headers=headers, cookies=cook)
-        print(request1.cookies)
-        nalog_url_2 = 'https://egrul.nalog.ru/vyp-status/' + token + '?r=' + str(int(time.time()*1000)-1) + '&_=' + str(int(time.time()*1000))
-        request2 = session.get(nalog_url_2, headers=headers, cookies=cook)
-        print(nalog_url_2)
-        if request1.status_code == 200:
-            print('GOOD')
-        else:
-            print(request1.status_code)
-        if request2.status_code == 200:
-            print('GOOD')
-        else:
-            print(request2.status_code)
-        nalog_url_3 = 'https://egrul.nalog.ru/vyp-download/' + token
-        request3 = session.get(nalog_url_3, headers=headers)
-        if request3.status_code == 200:
-            print('GOOD')
-        else:
-            print(request3.status_code)
-    else:
-        print('ERROR')
-
-parse_zakupki(base_url, headers)
-parse_nalog(headers)
 '''
+def parse_nalog(inn):
+    url = "https://rmsp.nalog.ru/search-proc.json"
 
-g = Grab()
-g.go('https://rmsp.nalog.ru/search-proc.json?query=7021004633')
+    querystring = {"query": inn}
+
+    headers = {
+        'cache-control': "no-cache",
+    }
+
+    response = requests.request("GET", url, headers=headers, params=querystring)
+    token = response.json().pop('data')[0].pop('token')
+    print(token)
+    url = "https://rmsp.nalog.ru/excerpt.pdf"
+
+    querystring = {"token": str(token)}
+
+    headers = {
+        'cache-control': "no-cache",
+    }
+
+    response = requests.request("GET", url, headers=headers, params=querystring)
+
+    file = open('D://test_content2.pdf', 'wb')  # создаем файл для записи результатов
+    file.write(response.content)  # записываем результат
+    file.close()  # закрываем файл
+
+# parse_zakupki(base_url, headers)
+
+parse_nalog(7021004633)

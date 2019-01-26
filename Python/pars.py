@@ -22,9 +22,16 @@ def parse_nalog(inn):
     }
 
     response = requests.request("GET", url, headers=headers, params=querystring)
-    token = response.json().pop('data')[0].pop('token')
-    print(token)
-    url = "https://rmsp.nalog.ru/excerpt.pdf"
+    tokenOld = response.json().pop('data')[0].pop('token')
+
+    url = "https://pb.nalog.ru/download-proc.json"              # По этому запросу получаешь токен для Прозрачного Бизнеса
+    querystring = {"token": tokenOld, "inn": inn, "pdf": "vyp"}
+
+    response = requests.request("POST", url, body=querystring)
+    print(response.content)
+
+                                                                # Ниже нужно сделать GET запрос с новым токеном и также скачать pdf
+    '''url = "https://pb.nalog.ru/excerpt.pdf"
 
     querystring = {"token": str(token)}
 
@@ -36,7 +43,7 @@ def parse_nalog(inn):
 
     file = open('D://test_content2.pdf', 'wb')  # создаем файл для записи результатов
     file.write(response.content)  # записываем результат
-    file.close()  # закрываем файл
+    file.close()  # закрываем файл'''
 
 # parse_zakupki(base_url, headers)
 

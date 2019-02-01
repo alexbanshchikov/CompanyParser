@@ -1,5 +1,13 @@
 import requests
-import time
+from pdfminer3.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer3.converter import HTMLConverter,TextConverter,XMLConverter
+from pdfminer3.layout import LAParams
+from pdfminer3.pdfpage import PDFPage
+from io import StringIO
+from io import BytesIO
+from bs4 import BeautifulSoup as bs
+from tabula import read_pdf
+import pandas
 
 def parse_nalog(inn):
     url = "https://pb.nalog.ru/search-proc.json"
@@ -9,9 +17,26 @@ def parse_nalog(inn):
     headers = {
         'cache-control': "no-cache",
     }
-
     response = requests.request("GET", url, headers=headers, params=querystring)
-    tokenOld = response.json().pop('cmp').pop('data')[0].pop('token')
+    tokenOld = response.json().pop('cmp').pop('data')[0].pop('token') #токен для получения выписки
+
+    url = "https://rmsp.nalog.ru/search-proc.json"
+    querystring = {"query": inn}
+    headers = {
+        'cache-control': "no-cache",
+    }
+    response = requests.request("GET", url, headers=headers, params=querystring)
+    token = response.json().pop('data')[0].pop('token')
+
+    url = "https://rmsp.nalog.ru/excerpt.pdf"
+    querystring = {"token": str(token)}
+    headers = {
+        'cache-control': "no-cache",
+    }
+    response = requests.request("GET", url, headers=headers, params=querystring)
+    file = open('D://reestr.pdf', 'wb')  # создаем файл для записи результатов
+    file.write(response.content)  # записываем результат
+    file.close()  # закрываем файл
 
     return str(tokenOld)
 
@@ -35,28 +60,46 @@ def parse_nalog_third(tokenBig):
 
     response = requests.request("POST", url, params=querystring)
 
-    file = open('D://test_content2.pdf', 'wb')  # создаем файл для записи результатов
+    file = open('D://vypiska.pdf', 'wb')  # создаем файл для записи результатов
     file.write(response.content)  # записываем результат
     file.close()  # закрываем файл'''
 
-tokenOld = parse_nalog(7021004633)
-tokenBig = parse_nalog_second_step(7021004633, tokenOld)
-parse_nalog_third(tokenBig)
+#tokenOld = parse_nalog(7021004633)
+#tokenBig = parse_nalog_second_step(7021004633, tokenOld)
+#parse_nalog_third(tokenBig)
 
+def parse_pdf(path_to_file):
+    rsrcmgr = PDFResourceManager()
+    retstr = StringIO()
+    #retstr = BytesIO()
+    codec = 'utf-8'
+    laparams = LAParams()
+    device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
+    #device = HTMLConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
+    fp = open(path_to_file, 'rb')
+    interpreter = PDFPageInterpreter(rsrcmgr, device)
+    password = ""
+    maxpages = 0
+    caching = True
+    pagenos = set()
 
+    for page in PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password, caching=caching,
+                                  check_extractable=True):
+        interpreter.process_page(page)
 
-def Ex(tokenOld):
-    time1 = str(int(time.time()*1000))
-    url = 'https://egrul.nalog.ru/vyp-request/' + tokenOld + '?r=&_=' + time1
+    text = retstr.getvalue()
 
-    headers = {
-        'cache-control': "no-cache",
-    }
-    querystring = {
-        'r':'',
-        '_': time1
-    }
-    response = requests.request("GET", url, headers=headers, params=querystring)
-    print(response.text)
+    fp.close()
+    device.close()
+    retstr.close()
+    return text
 
-#Ex(tokenOld)
+#text = parse_pdf('D://vypiska.pdf')
+
+files = "vypiska.pdf"
+path = 'D://vypiska.pdf'
+df = read_pdf(path, multiple_tables=True, encoding='utf-8', spreadsheet=True)#, pages='all')#, spreadsheet=True)
+print(df[1].iloc[8][1])
+print(df[1].iloc[8][2])
+#example = df[0]
+#print(example.values)

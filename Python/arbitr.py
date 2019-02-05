@@ -72,8 +72,9 @@ def arbitr_parse(answer):
                     respondent['address'] = ''.join(data[1].strip().split(',')[1:])
                 print('За Базар Ответчик: ', respondent)
 
+
+queryString = {"CaseNumbers": [], "Courts": [], "DateFrom": "null", "DateTo": "null", "Judges": [], "Page": 1, "Sides":
+    [{"Name": 7021004633, "Type": -1, "ExactMatch": "false"}]}
+
+ans = arbitr_get_html(queryString)
 arbitr_parse(ans)
-
-string = {"CaseNumbers": [],"Courts": [],"DateFrom": "null","DateTo": "null","Judges": [],"Page": 1,"Sides": [{"Name": 7021004633,"Type": -1,"ExactMatch": "false"}]}
-
-arbitr_get_html(params=string)

@@ -79,8 +79,8 @@ def parse_zakupki(base_url, headers):
 
 #parse_zakupki(base_url, headers)
 
-#base_url = 'http://www.zakupki.gov.ru/epz/order/notice/ea44/view/common-info.html?regNumber=0873200001718000443'
-base_url = 'http://www.zakupki.gov.ru/epz/order/notice/ep44/view/common-info.html?regNumber=0348100009118000197'
+base_url = 'http://www.zakupki.gov.ru/epz/order/notice/ea44/view/common-info.html?regNumber=0873200001718000443'
+#base_url = 'http://www.zakupki.gov.ru/epz/order/notice/ep44/view/common-info.html?regNumber=0348100009118000197'
 
 def infa_about_zakupka(base_url, headers):
     session = requests.Session()
@@ -113,4 +113,26 @@ def infa_about_zakupka(base_url, headers):
     else:
         print('ERROR')
 
-infa_about_zakupka(base_url, headers)
+#infa_about_zakupka(base_url, headers)
+
+#base_url = 'http://www.zakupki.gov.ru/epz/order/notice/ea44/view/documents.html?regNumber=0873200001718000443'
+base_url = 'http://zakupki.gov.ru/223/purchase/public/purchase/info/documents.html?regNumber=31807203209'
+
+def documents_zakupki(headers, base_url):
+    session = requests.Session()
+    request = session.get(base_url, headers=headers)
+    if request.status_code == 200:
+        answer = bs(request.content, 'html.parser')
+        if '/ea44/' in base_url:
+            for div in answer.find_all('a', class_=''):
+                if 'http' in div.get('href'):
+                    print(div.get('href'))
+                if '/epz/order' in div.get('href'):
+                    print('http://zakupki.gov.ru' + div.get('href'))
+        if '/223/' in base_url:
+            for div in answer.find_all('a', class_='epz_aware'):
+                print('http://zakupki.gov.ru' + div.get('href'))
+    else:
+        print('ERROR')
+
+documents_zakupki(headers, base_url)

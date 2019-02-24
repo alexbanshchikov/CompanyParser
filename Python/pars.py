@@ -61,12 +61,18 @@ tokenOld = parse_nalog(7021004633)
 tokenBig = parse_nalog_second_step(7021004633, tokenOld)
 parse_nalog_third(tokenBig)
 
-files = "vypiska.pdf"
 path = 'D://vypiska.pdf'
 
-df = read_pdf(path, multiple_tables=True, encoding='utf-8', spreadsheet=True)#, pages='all')#, spreadsheet=True)
-print(df[1].iloc[8][1])
-print(df[1].iloc[8][2])
-
-#example = df[0]
-#print(example.values)
+df = read_pdf(path, multiple_tables=True, encoding='utf-8', spreadsheet=True, pages='1-2')#, pages='all')#, spreadsheet=True)
+#print(df[1].iloc[8][1])
+#print(df[1].iloc[8][2])
+#print(df[1].iloc[3][2])
+dict = {}
+i = 0
+for index, row in df[1].iterrows():
+    if i > 2:
+        dict[row[1].strip()] = row[2]
+    i += 1
+for index, row in df[2].iterrows():
+    dict[row[1]] = row[2]
+print(dict)

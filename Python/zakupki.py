@@ -219,20 +219,23 @@ def deep_search(headers, base_url):
             else:
                 URL = 'http://www.zakupki.gov.ru/epz/order/notice/ea44/view/documents.html?regNumber=' + n1
             list = documents_zakupki(headers, URL)
-            #print(list)
+            print(list)
             buf = ''
             for i in range(len(list)):
                 req = session.get(list[i], headers=headers)
+                print(list[i])
                 if 'notice' in list[i]:
                     #print(req.content.decode('utf-8'))
                     buf = buf + req.content.decode('utf-8')
                     # print(buf.find('Недятько')) - поиск в протоколах и извещениях
                 if 'download' in list[i]:
                     print(req.content[1:20])
-                    if b'PK\x03\x04\x14\x00\x06\x00' in req.content[1:20]:
+                    if b'\x03\x04\x14\x00\x06\x00\x08\x00\x00\x00!\x00' in req.content[1:40]:
                         #print(chardet.detect(req.content))
                         #print(req.content.decode('utf-8').find('Цена'.encode('utf-8')))
-
+                        if b'\x03\x04\x14\x00\x06\x00\x08\x00\x00\x00!\x00`' in req.content[1:40]:
+                            print('excel')
+                        print('docx')
                         name = 'D://kek' + str(i) + '.docx'
                         #file = open(name, 'wb')  # создаем файл для записи результатов
                         #file.write(req.content)  # записываем результат
@@ -242,24 +245,24 @@ def deep_search(headers, base_url):
                         #print(text)
                         #os.remove(name)
                         # print(text.find(smth)) - поиск в doc документах
-                    if b'PDF' in req.content[1:10]:
+                    if b'PDF' in req.content[1:5]:
                         name = 'D://alarm' + str(i) + '.pdf'
+                        #file = open(name, 'wb')  # создаем файл для записи результатов
+                        #file.write(req.content)  # записываем результат
+                        #file.close()  # закрываем файл
+                        #print('excellent')
+                        #text = parse_pdf(name)
+                        #print(text.find('БИТ.Муниципалитет'))
+                        #print('НАШЛОСЬ')
+                        #os.remove(name)
+                    if b'\xcf\x11' in req.content[1:10]:
+                        name = 'D://doc' + str(i) + '.doc'
                         file = open(name, 'wb')  # создаем файл для записи результатов
                         file.write(req.content)  # записываем результат
                         file.close()  # закрываем файл
-                        print('excellent')
-                        text = parse_pdf(name)
-                        # print(text.find(smth)
-                        os.remove(name)
-                    break
     else:
         print('ERROR')
 #start_time = time.time()
-#deep_search(headers, base_url)
+deep_search(headers, base_url)
 #print("--- %s seconds ---" % (time.time() - start_time))
-
-
-
-name = 'D://alarm1.pdf'
-
-print(text.find('БИТ.Муниципалитет'))
+#print(b'\x03\x04\x14\x00\x06\x00\x08\x00\x00\x00!\x00\'')

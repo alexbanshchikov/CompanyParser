@@ -3,7 +3,16 @@ from bs4 import BeautifulSoup as bs
 import os
 import time
 import docx2txt
-#import chardet
+import chardet
+from pdfminer3.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer3.converter import HTMLConverter,TextConverter,XMLConverter
+from pdfminer3.layout import LAParams
+from pdfminer3.pdfpage import PDFPage
+from io import StringIO
+from io import BytesIO
+from bs4 import BeautifulSoup as bs
+from tabula import read_pdf
+import pandas
 
 headers = {'accept': '*/*',
            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'}
@@ -165,6 +174,32 @@ headers = {'accept': '*/*',
 
 base_url = 'http://www.zakupki.gov.ru/epz/order/quicksearch/search.html?searchString=%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D0%BC%D0%BD%D0%BE%D0%B5+%D0%BE%D0%B1%D0%B5%D1%81%D0%BF%D0%B5%D1%87%D0%B5%D0%BD%D0%B8%D0%B5&morphology=on&pageNumber=1&sortDirection=false&recordsPerPage=_50&showLotsInfoHidden=true&fz44=on&fz223=on&ppRf615=on&fz94=on&af=on&ca=on&pc=on&pa=on&priceFrom=0&priceTo=100000000&currencyId=1&region_regions_5277365=region_regions_5277365&region_regions_5277335=region_regions_5277335&regions=5277365%2C5277335&regionDeleted=false&publishDateFrom=01.11.2018&publishDateTo=20.02.2019&updateDateFrom=03.10.2018&updateDateTo=10.01.2019&sortBy=UPDATE_DATE'
 
+def parse_pdf(path_to_file):
+    rsrcmgr = PDFResourceManager()
+    retstr = StringIO()
+    #retstr = BytesIO()
+    codec = 'utf-8'
+    laparams = LAParams()
+    device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
+    #device = HTMLConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
+    fp = open(path_to_file, 'rb')
+    interpreter = PDFPageInterpreter(rsrcmgr, device)
+    password = ""
+    maxpages = 0
+    caching = True
+    pagenos = set()
+
+    for page in PDFPage.get_pages(fp, pagenos, maxpages=maxpages, password=password, caching=caching,
+                                  check_extractable=True):
+        interpreter.process_page(page)
+
+    text = retstr.getvalue()
+
+    fp.close()
+    device.close()
+    retstr.close()
+    return text
+
 def deep_search(headers, base_url):
     session = requests.Session()
     request = session.get(base_url, headers=headers)
@@ -191,25 +226,40 @@ def deep_search(headers, base_url):
                 if 'notice' in list[i]:
                     #print(req.content.decode('utf-8'))
                     buf = buf + req.content.decode('utf-8')
+                    # print(buf.find('Недятько')) - поиск в протоколах и извещениях
                 if 'download' in list[i]:
                     print(req.content[1:20])
-                    if b'PK\x03\x04\x14\x00\x06\x00' in req.content and b'xcf\x11' not in req.content:
+                    if b'PK\x03\x04\x14\x00\x06\x00' in req.content[1:20]:
                         #print(chardet.detect(req.content))
                         #print(req.content.decode('utf-8').find('Цена'.encode('utf-8')))
 
                         name = 'D://kek' + str(i) + '.docx'
+                        #file = open(name, 'wb')  # создаем файл для записи результатов
+                        #file.write(req.content)  # записываем результат
+                        #file.close()  # закрываем файл''
+                        #print('excellent')
+                        #text = docx2txt.process(name)
+                        #print(text)
+                        #os.remove(name)
+                        # print(text.find(smth)) - поиск в doc документах
+                    if b'PDF' in req.content[1:10]:
+                        name = 'D://alarm' + str(i) + '.pdf'
                         file = open(name, 'wb')  # создаем файл для записи результатов
                         file.write(req.content)  # записываем результат
-                        file.close()  # закрываем файл''
+                        file.close()  # закрываем файл
                         print('excellent')
-                        text = docx2txt.process(name)
-                        #print(text)
+                        text = parse_pdf(name)
+                        # print(text.find(smth)
                         os.remove(name)
-
-            #print(buf.find('Недятько')) - поиск в протоколах и извещениях
-            #print(text.find(smth)) - поиск в doc документах
+                    break
     else:
         print('ERROR')
 #start_time = time.time()
-deep_search(headers, base_url)
+#deep_search(headers, base_url)
 #print("--- %s seconds ---" % (time.time() - start_time))
+
+
+
+name = 'D://alarm1.pdf'
+
+print(text.find('БИТ.Муниципалитет'))

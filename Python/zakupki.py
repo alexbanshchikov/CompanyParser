@@ -256,13 +256,9 @@ def deep_search(headers, base_url):
                         #print('НАШЛОСЬ')
                         #os.remove(name)
                     if b'\xcf\x11' in req.content[1:10]:
-                        name = 'D://doc' + str(i) + '.doc'
-                        file = open(name, 'wb')  # создаем файл для записи результатов
-                        file.write(req.content)  # записываем результат
-                        file.close()  # закрываем файл
+                        print('doc or xls, we\'re sorry guys')
     else:
         print('ERROR')
 #start_time = time.time()
-deep_search(headers, base_url)
+#deep_search(headers, base_url)
 #print("--- %s seconds ---" % (time.time() - start_time))
-#print(b'\x03\x04\x14\x00\x06\x00\x08\x00\x00\x00!\x00\'')

@@ -12,7 +12,7 @@ from io import StringIO
 from io import BytesIO
 from bs4 import BeautifulSoup as bs
 from tabula import read_pdf
-import pandas
+import pandas as pd
 
 headers = {'accept': '*/*',
            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'}
@@ -177,11 +177,11 @@ base_url = 'http://www.zakupki.gov.ru/epz/order/quicksearch/search.html?searchSt
 def parse_pdf(path_to_file):
     rsrcmgr = PDFResourceManager()
     retstr = StringIO()
-    #retstr = BytesIO()
+    # retstr = BytesIO()
     codec = 'utf-8'
     laparams = LAParams()
     device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
-    #device = HTMLConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
+    # device = HTMLConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
     fp = open(path_to_file, 'rb')
     interpreter = PDFPageInterpreter(rsrcmgr, device)
     password = ""
@@ -200,7 +200,9 @@ def parse_pdf(path_to_file):
     retstr.close()
     return text
 
-def deep_search(headers, base_url):
+
+def deep_search(headers, base_url, args):
+    response = []
     session = requests.Session()
     request = session.get(base_url, headers=headers)
     if request.status_code == 200:
@@ -210,10 +212,10 @@ def deep_search(headers, base_url):
             number_req = div1.find('td', class_='descriptTenderTd').find('a', target='_blank').get('href')
             if number_req.find('http') == -1:
                 number = number_req.find('=')
-                n1 = number_req[number+1:]        #номер закупки
+                n1 = number_req[number+1:]        # номер закупки
             else:
                 number = number_req.find('=')
-                n1 = number_req[number + 1:]  # номер закупки
+                n1 = number_req[number + 1:]      # номер закупки
             if '223' in number_zayavki:
                 URL = 'http://zakupki.gov.ru/223/purchase/public/purchase/info/documents.html?regNumber=' + n1
             else:
@@ -225,40 +227,58 @@ def deep_search(headers, base_url):
                 req = session.get(list[i], headers=headers)
                 print(list[i])
                 if 'notice' in list[i]:
-                    #print(req.content.decode('utf-8'))
                     buf = buf + req.content.decode('utf-8')
-                    # print(buf.find('Недятько')) - поиск в протоколах и извещениях
+                    if buf.find(args) is not None:
+                        response.append(number_zayavki)
+                        break
+
                 if 'download' in list[i]:
                     print(req.content[1:20])
-                    if b'\x03\x04\x14\x00\x06\x00\x08\x00\x00\x00!\x00' in req.content[1:40]:
-                        #print(chardet.detect(req.content))
-                        #print(req.content.decode('utf-8').find('Цена'.encode('utf-8')))
-                        if b'\x03\x04\x14\x00\x06\x00\x08\x00\x00\x00!\x00`' in req.content[1:40]:
-                            print('excel')
-                        print('docx')
+                    if b'\x03\x04\x14\x00\x06\x00\x08\x00\x00\x00!\x00`' in req.content[1:40]:  # EXCEL
+                        print('excel')
+                        name = 'D://kek' + str(i) + '.xlsx'
+                        file = open(name, 'wb')       # создаем файл для записи результатов
+                        file.write(req.content)       # записываем результат
+                        file.close()                  # закрываем файл''
+                        text = pd.read_excel(r'name')
+                        os.remove(name)
+                        if text.find(args) is not None:
+                            response.append(number_zayavki)
+                        else:
+                            break
+
+                    if b'\x03\x04\x14\x00\x06\x00\x08\x00\x00\x00!\x00' in req.content[1:40]:   # WORD
                         name = 'D://kek' + str(i) + '.docx'
-                        #file = open(name, 'wb')  # создаем файл для записи результатов
-                        #file.write(req.content)  # записываем результат
-                        #file.close()  # закрываем файл''
-                        #print('excellent')
-                        #text = docx2txt.process(name)
-                        #print(text)
-                        #os.remove(name)
-                        # print(text.find(smth)) - поиск в doc документах
-                    if b'PDF' in req.content[1:5]:
+                        file = open(name, 'wb')        # создаем файл для записи результатов
+                        file.write(req.content)        # записываем результат
+                        file.close()                   # закрываем файл
+                        text = docx2txt.process(name)
+                        os.remove(name)
+                        if text.find(args) is not None:
+                            response.append(number_zayavki)
+                        else:
+                            break
+
+                    if b'PDF' in req.content[1:5]:                                              # PDF
                         name = 'D://alarm' + str(i) + '.pdf'
-                        #file = open(name, 'wb')  # создаем файл для записи результатов
-                        #file.write(req.content)  # записываем результат
-                        #file.close()  # закрываем файл
-                        #print('excellent')
-                        #text = parse_pdf(name)
-                        #print(text.find('БИТ.Муниципалитет'))
-                        #print('НАШЛОСЬ')
-                        #os.remove(name)
+                        file = open(name, 'wb')        # создаем файл для записи результатов
+                        file.write(req.content)        # записываем результат
+                        file.close()                   # закрываем файл
+                        text = parse_pdf(name)
+                        os.remove(name)
+                        if text.find(args) is not None:
+                            response.append(number_zayavki)
+                        else:
+                            break
+
                     if b'\xcf\x11' in req.content[1:10]:
                         print('doc or xls, we\'re sorry guys')
+
+        return response
     else:
         print('ERROR')
+
+
 #start_time = time.time()
 #deep_search(headers, base_url)
 #print("--- %s seconds ---" % (time.time() - start_time))

@@ -1,8 +1,6 @@
 import requests
 from bs4 import BeautifulSoup as bs
 
-import time
-
 def arbitr_get_html(params, count=25, vks="false"):
     url = "http://kad.arbitr.ru/Kad/SearchInstances"
 
@@ -21,10 +19,10 @@ def arbitr_get_html(params, count=25, vks="false"):
         'Content-Type': "application/json",
         'cache-control': "no-cache"
         }
-    start_time = time.time()
+
     response = requests.request("POST", url, data=payload, headers=headers)
     answer = bs(response.text, 'html.parser')
-    print("--- %s seconds ---" % (time.time() - start_time))
+
     return answer
 
 def arbitr_parse(answer):
@@ -67,7 +65,6 @@ def arbitr_parse(answer):
                     respondent['address'] = ''.join(data[1].strip().split(',')[1:])
                 deal['respondent'] = respondent
                 print(deal)
-
 
 queryString = {"CaseNumbers": [], "Courts": [], "DateFrom": "null", "DateTo": "null", "Judges": [], "Page": 1, "Sides":
     [{"Name": 7021004633, "Type": -1, "ExactMatch": "false"}]}

@@ -14,43 +14,17 @@ from bs4 import BeautifulSoup as bs
 from tabula import read_pdf
 import pandas as pd
 
-headers = {'accept': '*/*',
-           'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'}
-
-base_url = 'http://www.zakupki.gov.ru/epz/order/quicksearch/search.html?searchString=%D0%BC%D1%83%D0%BA%D0%B0&' \
-           'morphology=on&' \
-           'pageNumber=1&' \
-           'sortDirection=false&recordsPerPage=_50&' \
-           'showLotsInfoHidden=true&' \
-           'fz44=on&' \
-           'fz223=on&' \
-           'ppRf615=on&' \
-           'fz94=on&' \
-           'af=on&' \
-           'ca=on&' \
-           'pc=on&' \
-           'pa=on&' \
-           'priceFrom=0&' \
-           'priceTo=100000000&' \
-           'currencyId=1&' \
-           'region_regions_5277365=region_regions_5277365&region_regions_5277335=region_regions_5277335&' \
-           'regions=5277365%2C5277335&' \
-           'regionDeleted=false&' \
-           'publishDateFrom=01.11.2018&' \
-           'publishDateTo=20.02.2019&' \
-           'updateDateFrom=03.10.2018&' \
-           'updateDateTo=10.01.2019&' \
-           'sortBy=UPDATE_DATE'
-
 def parse_zakupki(base_url, headers):
     session = requests.Session()
     request = session.get(base_url, headers=headers)
     if request.status_code == 200:
         answer = bs(request.content, 'html.parser')
+
         dict = {'info': None, 'timeNews': None, 'zayavka_po': None, 'first_price': None, 'currency': None,
-                'price': None, 'URL': None, 'n1': None,
+                'URL': None, 'n1': None,
                 'customer': None, 'customer_URL': None, 'describe': None, 'identification_code': None,
                 'posted': None, 'updated': None}
+
         for div1 in answer.find_all('div', attrs={'class': 'registerBox registerBoxBank margBtm20'}):
             dict['info'] = div1.find('strong').text.strip()
             dict['timeNews'] = div1.find('span').text.strip().split('/')[0]
@@ -64,24 +38,19 @@ def parse_zakupki(base_url, headers):
                 dict['currency'] = div1.find('span', attrs={'class': 'currency'}).text
             except:
                 pass
-            try:
-                dict['price'] = (''.join(str(first_price[0]).strip().split()), str(first_price[1]), currency) # цена
-            except:
-                pass
 
             number_req = div1.find('td', class_='descriptTenderTd').find('a', target='_blank').get('href')
             if number_req.find('http') == -1:
                 dict['URL'] = 'http://www.zakupki.gov.ru' + number_req  #URL закупки
-                number = number_req.find('=')
-                dict['n1'] = number_req[number+1:]        #номер закупки
             else:
                 dict['URL'] = number_req #URL закупки
-                number = number_req.find('=')
-                dict['n1'] = number_req[number + 1:]  # номер закупки
+            number = number_req.find('=')
+            dict['n1'] = number_req[number + 1:]  # номер закупки
 
             try:
-                dict['customer'] = div1.find('dd', class_='nameOrganization').find('a', target='_blank').text.strip()   #Наименование организации
-                dict['customer_URL'] = div1.find('dd', class_='nameOrganization').find('a', target='_blank').get('href')    #Ссылка на организацию
+                buf = div1.find('dd', class_='nameOrganization').find('a', target='_blank')
+                dict['customer'] = buf.text.strip()   #Наименование организации
+                dict['customer_URL'] = buf.get('href')    #Ссылка на организацию
                 if number_req.find('http') == -1:
                     dict['customer_URL'] = 'http://www.zakupki.gov.ru' + dict['customer_URL']
             except:
@@ -102,11 +71,6 @@ def parse_zakupki(base_url, headers):
 
     else:
         print('ERROR')
-
-#parse_zakupki(base_url, headers)
-
-base_url = 'http://www.zakupki.gov.ru/epz/order/notice/ea44/view/common-info.html?regNumber=0873200001718000443'
-#base_url = 'http://www.zakupki.gov.ru/epz/order/notice/ep44/view/common-info.html?regNumber=0348100009118000197'
 
 def infa_about_zakupka(base_url, headers):
     session = requests.Session()
@@ -139,11 +103,6 @@ def infa_about_zakupka(base_url, headers):
     else:
         print('ERROR')
 
-#infa_about_zakupka(base_url, headers)
-
-#base_url = 'http://www.zakupki.gov.ru/epz/order/notice/ea44/view/documents.html?regNumber=0873200001718000443'
-base_url = 'http://zakupki.gov.ru/223/purchase/public/purchase/info/documents.html?regNumber=31807203209'
-
 def documents_zakupki(headers, base_url):
     session = requests.Session()
     request = session.get(base_url, headers=headers)
@@ -166,13 +125,6 @@ def documents_zakupki(headers, base_url):
     else:
         print('ERROR')
         return 0
-
-#documents_zakupki(headers, base_url)
-
-headers = {'accept': '*/*',
-           'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'}
-
-base_url = 'http://www.zakupki.gov.ru/epz/order/quicksearch/search.html?searchString=%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D0%BC%D0%BD%D0%BE%D0%B5+%D0%BE%D0%B1%D0%B5%D1%81%D0%BF%D0%B5%D1%87%D0%B5%D0%BD%D0%B8%D0%B5&morphology=on&pageNumber=1&sortDirection=false&recordsPerPage=_50&showLotsInfoHidden=true&fz44=on&fz223=on&ppRf615=on&fz94=on&af=on&ca=on&pc=on&pa=on&priceFrom=0&priceTo=100000000&currencyId=1&region_regions_5277365=region_regions_5277365&region_regions_5277335=region_regions_5277335&regions=5277365%2C5277335&regionDeleted=false&publishDateFrom=01.11.2018&publishDateTo=20.02.2019&updateDateFrom=03.10.2018&updateDateTo=10.01.2019&sortBy=UPDATE_DATE'
 
 def parse_pdf(path_to_file):
     rsrcmgr = PDFResourceManager()
@@ -273,12 +225,49 @@ def deep_search(headers, base_url, args):
 
                     if b'\xcf\x11' in req.content[1:10]:
                         print('doc or xls, we\'re sorry guys')
-
         return response
     else:
         print('ERROR')
 
+headers = {'accept': '*/*',
+           'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'}
 
-#start_time = time.time()
+base_url = 'http://www.zakupki.gov.ru/epz/order/quicksearch/search.html?searchString=%D0%BC%D1%83%D0%BA%D0%B0&' \
+           'morphology=on&' \
+           'pageNumber=1&' \
+           'sortDirection=false&recordsPerPage=_50&' \
+           'showLotsInfoHidden=true&' \
+           'fz44=on&' \
+           'fz223=on&' \
+           'ppRf615=on&' \
+           'fz94=on&' \
+           'af=on&' \
+           'ca=on&' \
+           'pc=on&' \
+           'pa=on&' \
+           'priceFrom=0&' \
+           'priceTo=100000000&' \
+           'currencyId=1&' \
+           'region_regions_5277365=region_regions_5277365&region_regions_5277335=region_regions_5277335&' \
+           'regions=5277365%2C5277335&' \
+           'regionDeleted=false&' \
+           'publishDateFrom=01.11.2018&' \
+           'publishDateTo=20.02.2019&' \
+           'updateDateFrom=03.10.2018&' \
+           'updateDateTo=10.01.2019&' \
+           'sortBy=UPDATE_DATE'
+parse_zakupki(base_url, headers) # получение списка всех закупок на странице
+
+base_url = 'http://www.zakupki.gov.ru/epz/order/notice/ea44/view/common-info.html?regNumber=0873200001718000443'
+#base_url = 'http://www.zakupki.gov.ru/epz/order/notice/ep44/view/common-info.html?regNumber=0348100009118000197'
+#infa_about_zakupka(base_url, headers) #подробная информация о закупке
+
+#base_url = 'http://www.zakupki.gov.ru/epz/order/notice/ea44/view/documents.html?regNumber=0873200001718000443'
+base_url = 'http://zakupki.gov.ru/223/purchase/public/purchase/info/documents.html?regNumber=31807203209'
+#documents_zakupki(headers, base_url) #получение всех документов о закупке
+
+headers = {'accept': '*/*',
+           'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'}
+
+base_url = 'http://www.zakupki.gov.ru/epz/order/quicksearch/search.html?searchString=%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D0%BC%D0%BD%D0%BE%D0%B5+%D0%BE%D0%B1%D0%B5%D1%81%D0%BF%D0%B5%D1%87%D0%B5%D0%BD%D0%B8%D0%B5&morphology=on&pageNumber=1&sortDirection=false&recordsPerPage=_50&showLotsInfoHidden=true&fz44=on&fz223=on&ppRf615=on&fz94=on&af=on&ca=on&pc=on&pa=on&priceFrom=0&priceTo=100000000&currencyId=1&region_regions_5277365=region_regions_5277365&region_regions_5277335=region_regions_5277335&regions=5277365%2C5277335&regionDeleted=false&publishDateFrom=01.11.2018&publishDateTo=20.02.2019&updateDateFrom=03.10.2018&updateDateTo=10.01.2019&sortBy=UPDATE_DATE'
 #deep_search(headers, base_url)
-#print("--- %s seconds ---" % (time.time() - start_time))

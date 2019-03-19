@@ -1,12 +1,12 @@
 import requests
 from tabula import read_pdf
 import pandas
+import argparse
 
 def parse_nalog(inn):
     url = "https://pb.nalog.ru/search-proc.json"
 
     querystring = {"query": inn}
-
     headers = {
         'cache-control': "no-cache",
     }
@@ -149,7 +149,17 @@ def parse_pdf():
 
         print(Kind_Of_Activity)
 
-tokenOld = parse_nalog(7021004633)
-tokenBig = parse_nalog_second_step(7021004633, tokenOld)
-parse_nalog_third(tokenBig)
-parse_pdf()
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('INN', type=int, help='INN some company')
+    args = parser.parse_args()
+
+    #tokenOld = parse_nalog(7021004633)
+    # tokenBig = parse_nalog_second_step(7021004633, tokenOld)
+    tokenOld = parse_nalog(args.INN)
+    tokenBig = parse_nalog_second_step(args.INN, tokenOld)
+    parse_nalog_third(tokenBig)
+    parse_pdf()
+
+if __name__ == '__main__':
+    main()

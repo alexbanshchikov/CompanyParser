@@ -271,3 +271,73 @@ headers = {'accept': '*/*',
 
 base_url = 'http://www.zakupki.gov.ru/epz/order/quicksearch/search.html?searchString=%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D0%BC%D0%BD%D0%BE%D0%B5+%D0%BE%D0%B1%D0%B5%D1%81%D0%BF%D0%B5%D1%87%D0%B5%D0%BD%D0%B8%D0%B5&morphology=on&pageNumber=1&sortDirection=false&recordsPerPage=_50&showLotsInfoHidden=true&fz44=on&fz223=on&ppRf615=on&fz94=on&af=on&ca=on&pc=on&pa=on&priceFrom=0&priceTo=100000000&currencyId=1&region_regions_5277365=region_regions_5277365&region_regions_5277335=region_regions_5277335&regions=5277365%2C5277335&regionDeleted=false&publishDateFrom=01.11.2018&publishDateTo=20.02.2019&updateDateFrom=03.10.2018&updateDateTo=10.01.2019&sortBy=UPDATE_DATE'
 #deep_search(headers, base_url)
+
+typeRequest = 'morphology=on' #поиск с учетом всех форм слов
+typeRequest = 'strictEqual=false' #строгое соответствие
+
+service = 'openMode=USE_DEFAULT_PARAMS&pageNumber=1&sortDirection=false&recordsPerPage=_10&showLotsInfoHidden=false'
+typePurchases = 'fz44=on&fz223=on&ppRf615=on&fz94=on' # закупки по конкретным ФЗ
+stage = 'af=on&ca=on&pc=on&pa=on' # подача заявок, работа комиссии, процедура завершена, процедура отменена
+
+way = 'placingWaysList=OK504'# способ определения поставщика: конкурс в электронной форме
+way = 'placingWaysList=OK504%2CZK504%2CZP504%2COKU504%2COKD504%2CKESMBO%2CAESMBO%2CZKESMBO%2CZPESMBO%2CEA94%2CEA%' \
+      '2CEP%2CPO%2CPO44%2CEA615%2CPO615%2CZKK44%2COKU44%2CZP44%2CZKB44%2CZK44%2CZK%2CTB%2CES%2CZH%2CEP44%2COKD44%2CZA44%' \
+      '2CSZ%2CEF%2COK44%2COK%2CEA44%2CZKKU44%2COA%2CZKKD44%2CINM111%2CPR'
+# Открытый конкурс в электронной форме - OK504
+# Запрос котировок в электронной форме - ZK504
+# Запрос предложений в электронной форме - ZP504
+# Конкурс с ограниченным участием в электронной форме - OKU504
+# Двухэтапный конкурс в электронной форме - OKD504
+# Конкурс в электронной форме, участниками которого могут являться только субъекты малого и среднего предпринимательства - KESMBO
+# Аукцион в электронной форме, участниками которого могут являться только субъекты малого и среднего предпринимательства - AESMBO
+# Запрос котировок в электронной форме, участниками которого могут являться только субъекты малого и среднего предпринимательства - ZKESMBO
+# Запрос предложений в электронной форме, участниками которого могут являться только субъекты малого и среднего предпринимательства - ZPESMBO
+# Открытый аукцион в электронной форме (по 94ФЗ) - EA94
+# Открытый аукцион в электронной форме - EA
+# Закупка у единственного поставщика (исполнителя, подрядчика) - EP
+# Предварительный отбор - PO
+# Предварительный отбор - PO44
+# Электронный аукцион на оказание услуг или выполнение работ по капитальному ремонту общего имущества в многоквартирном доме - EA615
+# Предварительный отбор квалифицированных подрядных организаций - PO615
+# Закрытый конкурс - ZKK44
+# Конкурс с ограниченным участием - OKU44
+# Запрос предложений - ZP44
+# Запрос котировок без размещения извещения - ZKB44
+# Запрос котировок - ZK44
+# Запрос котировок - ZK
+# Торги на товарных биржах - TB
+# Единственный поставщик - ES
+# Результат рассмотрения и оценки котировочных заявок (Глава 5 Федерального закона №94-Ф3) - ZH
+# Закупка у единственного поставщика (подрядчика, исполнителя) - EP44
+# Двухэтапный конкурс - OKD44
+# Закрытый аукцион - ZA44
+# Сообщение о заинтересованности в проведении открытого конкурса - SZ
+# Открытый аукцион в электронной форме - EF
+# Открытый конкурс - OK44
+# Открытый конкурс - OK
+# Электронный аукцион - EA44
+# Закрытый конкурс с ограниченным участием - ZKKU44
+# Открытый аукцион - OA
+# Закрытый двухэтапный конкурс - ZKKD44
+# Способ определения поставщика (подрядчика, исполнителя), установленный Правительством Российской Федерации в соответствии со ст. 111 Федерального закона № 44-ФЗ - INM111
+# Прочее - PR
+
+price = 'priceFromGeneral=14&priceToGeneral=1000000' #начальная цена от и до
+participantName = 'participantName=мука' #участник закупки
+publishedData = 'publishDateFrom=01.03.2019&publishDateTo=17.03.2019' # дата публикации от и до
+updateDate = 'updateDateFrom=01.03.2019&updateDateTo=17.03.2019' #дата обновления от и до
+levelOfOrganization = 'F=on&S=on&M=on' #уровень: федеральный, субъект РФ, муниципальный
+
+district = 'is_volga_district=1&is_far_eastern_district=1&is_north_west_district=1&districts=5277399%2C5277362%2C5277336'
+# district = 'is_far_eastern_district=1&districts=5277399' #федеральный уровень заказчика: Дальневосточный ФО
+# district = 'is_volga_district=1&districts=5277362' #федеральный уровень заказчика: Приволжский ФО
+# district = 'is_north_west_district=1&districts=527733' #федеральный уровень заказчика: Северо-Западный ФО
+# district = 'is_north_caucasus_district=1&districts=9409197' #федеральный уровень заказчика: Северо-Кавказский ФО
+# district = 'is_siberian_district=1&districts=5277384' #федеральный уровень заказчика: Сибирский ФО
+# district = 'is_ural_district=1&districts=5277377' #федеральный уровень заказчика: Уральский ФО
+# district = 'is_central_district=1&districts=5277317' #федеральный уровень заказчика: Центральный ФО
+# district = 'is_southern_district=1&districts=9371527' #федеральный уровень заказчика: Южный ФО
+
+deliveryAdress = 'deliveryAddress=ленина' #адрес места поставки
+applSubmissionDate = 'applSubmissionCloseDateFrom=01.03.2019&applSubmissionCloseDateTo=05.03.2019' #дата окончания подачи заявок
+exclText = 'exclText=баранки' #исключить слово

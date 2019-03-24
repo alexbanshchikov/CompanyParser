@@ -2,6 +2,8 @@ import requests
 from tabula import read_pdf
 import pandas
 import argparse
+import logging
+import os
 
 def parse_nalog(inn):
     url = "https://pb.nalog.ru/search-proc.json"
@@ -146,10 +148,11 @@ def parse_pdf():
         else:
             j = 0
             i += 1
-
-        print(Kind_Of_Activity)
+    os.system('cls')
+    print(Kind_Of_Activity)
 
 def main():
+    logging.disable(logging.CRITICAL)
     parser = argparse.ArgumentParser()
     parser.add_argument('INN', type=int, help='INN some company')
     args = parser.parse_args()
